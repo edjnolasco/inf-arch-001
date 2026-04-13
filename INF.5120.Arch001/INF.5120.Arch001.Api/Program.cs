@@ -1,4 +1,8 @@
 using INF._5120.Arch001.Api.Extensions;
+using INF._5120.Arch001.Application.Interfaces;
+using INF._5120.Arch001.Application.Services;
+using INF._5120.Arch001.Infrastructure.Persistence.Context;
+using INF._5120.Arch001.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;

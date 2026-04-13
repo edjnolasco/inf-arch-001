@@ -1,9 +1,4 @@
-﻿using INF._5120.Arch001.Infrastructure.Persistence.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using INF._5120.Arch001.Application.Interfaces;
 
 namespace INF._5120.Arch001.Infrastructure.Services.EntitiesInsert
 {

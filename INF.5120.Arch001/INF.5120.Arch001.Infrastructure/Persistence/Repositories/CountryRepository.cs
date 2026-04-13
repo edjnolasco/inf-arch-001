@@ -1,10 +1,7 @@
-﻿using INF._5120.Arch001.Domain.Entities;
+﻿using INF._5120.Arch001.Application.Interfaces;
+using INF._5120.Arch001.Domain.Entities;
 using INF._5120.Arch001.Infrastructure.Persistence.Context;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace INF._5120.Arch001.Infrastructure.Persistence.Repositories
 {

@@ -1,4 +1,6 @@
-﻿namespace INF._5120.Arch001.Api.Extensions
+﻿using INF._5120.Arch001.Api.Middleware;
+
+namespace INF._5120.Arch001.Api.Extensions
 {
     public static class ApplicationBuilderExtensions
     {
