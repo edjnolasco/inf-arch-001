@@ -1,0 +1,49 @@
+Proyectos que se deben referenciar.
+
+src/
+Referencia 1.
+Proyecto:
+INF.5120.Arch001.Api
+Referencia:
+INF.5120.Arch001.Infrastructure
+Referencia 2.
+Proyecto:
+INF.5120.Arch001.Application
+Referencia:
+INF.5120.Arch001.Domain
+Referencia 3.
+Proyecto:
+INF.5120.Arch001.Domain
+Referencia:
+Ninguna
+Referencia 4.
+Proyecto:
+INF.5120.Arch001.Infrastructure
+Referencia:
+INF.5120.Arch001.Application
+INF.5120.Arch001.Domain
+
+tests/
+Referencia 1.
+Proyecto:
+INF.5120.Arch001.Api.Tests
+Referencia:
+INF.5120.Arch001.Api
+Referencia 2.
+Proyecto:
+INF.5120.Arch001.Application.Tests
+Referencia:
+INF.5120.Arch001.Application
+INF.5120.Arch001.Infrastructure
+Referencia 3.
+Proyecto:
+INF.5120.Arch001.Domain.Tests
+Referencia:
+INF.5120.Arch001.Domain
+INF.5120.Arch001.Infrastructure
+Referencia 4.
+Proyecto:
+INF.5120.Arch001.Infrastructure.Tests
+Referencia:
+INF.5120.Arch001.Application
+INF.5120.Arch001.Infrastructure
