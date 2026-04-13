@@ -1,7 +1,6 @@
 ﻿using INF._5120.Arch001.Application.Common;
 using INF._5120.Arch001.Application.DTOs.CountryDTOs;
 using INF._5120.Arch001.Application.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace INF._5120.Arch001.Api.Controllers
