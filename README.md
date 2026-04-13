@@ -94,6 +94,16 @@ INF.5120.Arch001/
 └── .github/workflows/
 
 ```
+## 📘 Architecture Decision Records (ADR)
+
+Las decisiones clave del sistema están documentadas en:
+
+- [ADR-001: Clean Architecture](decisions/001-clean-architecture.md)
+- [ADR-002: EF Core](decisions/002-ef-core.md)
+- [ADR-003: ServiceResult](decisions/003-serviceresult.md)
+- [ADR-004: Docker](decisions/004-docker.md)
+- [ADR-005: Testing Strategy](decisions/005-testing.md)
+- [ADR-006: Logging Strategy](decisions/006-logging.md)
 ---
 
 ⚙️ Tecnologías
