@@ -35,9 +35,4 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Context\" />
-    <Folder Include="Repositories\" />
-  </ItemGroup>
-
 </Project>

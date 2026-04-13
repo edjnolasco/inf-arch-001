@@ -1,0 +1,28 @@
+﻿using INF._5120.Arch001.Application.Interfaces;
+using INF._5120.Arch001.Application.Tests.Mocks;
+using INF._5120.Arch001.Infrastructure.Services.EntitiesInsert;
+
+namespace INF._5120.Arch001.Application.Tests.Interfaces
+{
+    public class ICountryRepositoryTests
+    {
+        [Fact]
+        public void OnInsertCountryShouldReturnIsNotValid()
+        {
+            //Arrange
+            ICountryRepository countryRepository = new CountryRepositoryMock();
+
+            var countryService = new CountryService(countryRepository);
+
+            //Act
+            var (isValid, _) = countryService.InsertNewCountry(
+                description: "Description",
+                isoA2: "null",
+                isoA3: "isoA3"
+            );
+
+            //Assert
+            Assert.False(isValid);
+        }
+    }
+}
