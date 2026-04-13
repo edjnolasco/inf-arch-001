@@ -94,19 +94,29 @@ INF.5120.Arch001/
 └── .github/workflows/
 
 ```
+## 📘 Architecture Decision Records (ADR)
+
+Las decisiones clave del sistema están documentadas en:
+
+- [ADR-001: Clean Architecture](decisions/001-clean-architecture.md)
+- [ADR-002: EF Core](decisions/002-ef-core.md)
+- [ADR-003: ServiceResult](decisions/003-serviceresult.md)
+- [ADR-004: Docker](decisions/004-docker.md)
+- [ADR-005: Testing Strategy](decisions/005-testing.md)
+- [ADR-006: Logging Strategy](decisions/006-logging.md)
 ---
 
 ⚙️ Tecnologías
-.NET 8
-ASP.NET Core
-Entity Framework Core
-SQL Server
-Swagger / OpenAPI
-xUnit
-EF Core InMemory
-GitHub Actions
-Codecov
-Docker
+- [X] .NET 8
+- [X] ASP.NET Core
+- [X] Entity Framework Core
+- [X] SQL Server
+- [X] Swagger / OpenAPI
+- [X] xUnit
+- [X] EF Core InMemory
+- [X] GitHub Actions
+- [X] Codecov
+- [X] Docker
 
 ---
 
@@ -135,17 +145,16 @@ Ejemplo:
   "message": "El recurso solicitado no existe."
 }
 
----
-
 ```
+
 📝 Logging
 
 Se utiliza ILogger<T> para registrar:
 
-operaciones CRUD
-validaciones
-conflictos
-errores
+- [X] operaciones CRUD
+- [X] validaciones
+- [X] conflictos
+- [X] errores
 
 ---
 
@@ -153,8 +162,8 @@ errores
 
 Incluye:
 
-Unit tests (Application)
-Integration tests (EF Core InMemory)
+- [X] Unit tests (Application)
+- [X] Integration tests (EF Core InMemory)
 
 ---
 
@@ -180,10 +189,10 @@ CODECOV_TOKEN
 
 Pipeline incluye:
 
-restore
-build
-test
-coverage
+- [X] restore
+- [X] build
+- [X] test
+- [X] coverage
 
 Archivo:
 
@@ -243,17 +252,16 @@ dotnet run
 ---
 📌 Estado
 
-✔ Clean Architecture
-✔ CRUD
-✔ Swagger
-✔ Logging
-✔ Tests
-✔ CI
-✔ Coverage
-✔ Docker
+- [X]  Clean Architecture
+- [X]  CRUD
+- [X] Swagger
+- [X]  Logging
+- [X]  Tests
+- [X]  CI
+- [X]  Coverage
+- [X]  Docker
 ---
 
 📚 Autor
 Edwin José Nolasco
-INF-5120
 ---
