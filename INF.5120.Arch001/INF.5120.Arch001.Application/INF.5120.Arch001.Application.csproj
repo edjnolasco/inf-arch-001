@@ -11,4 +11,11 @@
     <ProjectReference Include="..\INF.5120.Arch001.Domain\INF.5120.Arch001.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Common\" />
+    <Folder Include="DTOs\CountryDTOs\" />
+    <Folder Include="Interfaces\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>
