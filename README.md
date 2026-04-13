@@ -135,9 +135,8 @@ Ejemplo:
   "message": "El recurso solicitado no existe."
 }
 
----
-
 ```
+
 📝 Logging
 
 Se utiliza ILogger<T> para registrar:
