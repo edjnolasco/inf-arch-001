@@ -24,6 +24,14 @@ Se adopta **Clean Architecture**, orientada a separar responsabilidades y contro
 
 ---
 
+## 📘 Architecture Decision Records (ADR)
+
+Las decisiones clave del sistema están documentadas en:
+
+- [ADR-001: Clean Architecture](decisions/001-clean-architecture.md)
+- [ADR-002: EF Core](decisions/002-ef-core.md)
+- [ADR-003: ServiceResult](decisions/003-serviceresult.md)
+
 ## 3. Vista arquitectónica (C4 Model)
 
 ---
