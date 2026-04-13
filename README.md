@@ -107,16 +107,16 @@ Las decisiones clave del sistema están documentadas en:
 ---
 
 ⚙️ Tecnologías
-.NET 8
-ASP.NET Core
-Entity Framework Core
-SQL Server
-Swagger / OpenAPI
-xUnit
-EF Core InMemory
-GitHub Actions
-Codecov
-Docker
+- [X] .NET 8
+- [X] ASP.NET Core
+- [X] Entity Framework Core
+- [X] SQL Server
+- [X] Swagger / OpenAPI
+- [X] xUnit
+- [X] EF Core InMemory
+- [X] GitHub Actions
+- [X] Codecov
+- [X] Docker
 
 ---
 
@@ -151,10 +151,10 @@ Ejemplo:
 
 Se utiliza ILogger<T> para registrar:
 
-operaciones CRUD
-validaciones
-conflictos
-errores
+- [X] operaciones CRUD
+- [X] validaciones
+- [X] conflictos
+- [X] errores
 
 ---
 
@@ -162,8 +162,8 @@ errores
 
 Incluye:
 
-Unit tests (Application)
-Integration tests (EF Core InMemory)
+- [X] Unit tests (Application)
+- [X] Integration tests (EF Core InMemory)
 
 ---
 
@@ -189,10 +189,10 @@ CODECOV_TOKEN
 
 Pipeline incluye:
 
-restore
-build
-test
-coverage
+- [X] restore
+- [X] build
+- [X] test
+- [X] coverage
 
 Archivo:
 
@@ -252,17 +252,16 @@ dotnet run
 ---
 📌 Estado
 
-✔ Clean Architecture
-✔ CRUD
-✔ Swagger
-✔ Logging
-✔ Tests
-✔ CI
-✔ Coverage
-✔ Docker
+- [X]  Clean Architecture
+- [X]  CRUD
+- [X] Swagger
+- [X]  Logging
+- [X]  Tests
+- [X]  CI
+- [X]  Coverage
+- [X]  Docker
 ---
 
 📚 Autor
 Edwin José Nolasco
-INF-5120
 ---
