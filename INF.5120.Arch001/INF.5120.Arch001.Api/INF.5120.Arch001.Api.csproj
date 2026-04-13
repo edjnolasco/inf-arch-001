@@ -15,13 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-    <Folder Include="Common\" />
-    <Folder Include="Extensions\" />
-    <Folder Include="Middleware\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\INF.5120.Arch001.Infrastructure\INF.5120.Arch001.Infrastructure.csproj" />
   </ItemGroup>
 
