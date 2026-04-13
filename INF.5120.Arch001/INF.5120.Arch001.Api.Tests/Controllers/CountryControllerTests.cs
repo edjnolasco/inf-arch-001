@@ -1,352 +1,309 @@
-﻿using INF._5120.Arch001.Api.Controllers;
+﻿using INF._5120.Arch001.Application.Common;
 using INF._5120.Arch001.Application.DTOs.CountryDTOs;
-using INF._5120.Arch001.Application.Interfaces;
 using INF._5120.Arch001.Application.Services;
 using INF._5120.Arch001.Domain.Entities;
 using INF._5120.Arch001.Infrastructure.Persistence.Context;
 using INF._5120.Arch001.Infrastructure.Persistence.Repositories;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
-namespace INF._5120.Arch001.Api.Tests.Controllers
+namespace INF._5120.Arch001.Api.Tests.Controllers;
+
+public sealed class CountryServiceTests : IDisposable
 {
-    public class CountryControllerTests
+    private static readonly DateTime SeedDateUtc = new(2026, 4, 12, 0, 0, 0, DateTimeKind.Utc);
+
+    private readonly INF5120DbContext _context;
+    private readonly CountryService _service;
+
+    public CountryServiceTests()
     {
-        private readonly INF5120DbContext _context;
+        _context = CreateDbContext();
+        SeedCountries(_context);
+        _service = CreateService(_context);
+    }
 
-        public CountryControllerTests()
+    [Fact]
+    public async Task GetAllAsync_ShouldReturnOkWithCountries()
+    {
+        // Act
+        var result = await _service.GetAllAsync();
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal(ServiceErrorType.None, result.ErrorType);
+        Assert.NotNull(result.Data);
+
+        var countries = result.Data.ToList();
+        Assert.Equal(2, countries.Count);
+        Assert.Contains(countries, c => c.Id == 1 && c.Description == "TestCountry1");
+        Assert.Contains(countries, c => c.Id == 2 && c.Description == "TestCountry2");
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnOk_WhenCountryExists()
+    {
+        // Act
+        var result = await _service.GetByIdAsync(1);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal(ServiceErrorType.None, result.ErrorType);
+        Assert.NotNull(result.Data);
+        Assert.Equal(1, result.Data.Id);
+        Assert.Equal("TestCountry1", result.Data.Description);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnNotFound_WhenCountryDoesNotExist()
+    {
+        // Act
+        var result = await _service.GetByIdAsync(999);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal(ServiceErrorType.NotFound, result.ErrorType);
+        Assert.Null(result.Data);
+        Assert.False(string.IsNullOrWhiteSpace(result.Message));
+    }
+
+    [Fact]
+    public async Task CreateAsync_ShouldPersistCountry_WhenRequestIsValid()
+    {
+        // Arrange
+        var request = new CreateCountryRequestDto
         {
-            var options = new DbContextOptionsBuilder<INF5120DbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
+            Description = "Dominican Republic",
+            IsoNum = 214,
+            IsoA2 = "do",
+            IsoA3 = "dom",
+            IsEnable = true
+        };
 
-            _context = new INF5120DbContext(options);
+        // Act
+        var result = await _service.CreateAsync(request);
 
-            _context.Countries.AddRange(
-                new Country
-                {
-                    Id = 1,
-                    Description = "TestCountry1",
-                    IsoNum = 999,
-                    IsoA2 = "TC",
-                    IsoA3 = "TST",
-                    IsEnable = true,
-                    CreatedDate = DateTime.UtcNow
-                },
-                new Country
-                {
-                    Id = 2,
-                    Description = "TestCountry2",
-                    IsoNum = 444,
-                    IsoA2 = "TS",
-                    IsoA3 = "TCT",
-                    IsEnable = true,
-                    CreatedDate = DateTime.UtcNow
-                });
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal(ServiceErrorType.None, result.ErrorType);
+        Assert.NotNull(result.Data);
+        Assert.Equal("Dominican Republic", result.Data.Description);
+        Assert.Equal("DO", result.Data.IsoA2);
+        Assert.Equal("DOM", result.Data.IsoA3);
 
-            _context.SaveChanges();
-        }
+        var entity = await _context.Countries
+            .SingleOrDefaultAsync(c => c.Description == "Dominican Republic", cancellationToken: TestContext.Current.CancellationToken);
 
-        private CountryController BuildController()
+        Assert.NotNull(entity);
+        Assert.Equal(214, entity.IsoNum);
+        Assert.Equal("DO", entity.IsoA2);
+        Assert.Equal("DOM", entity.IsoA3);
+        Assert.True(entity.IsEnable);
+    }
+
+    [Fact]
+    public async Task CreateAsync_ShouldReturnConflict_WhenDuplicateExists()
+    {
+        // Arrange
+        var request = new CreateCountryRequestDto
         {
-            ICountryRepository repository = new CountryRepository(_context);
-            ICountryService service = new CountryService(repository);
-            return new CountryController(service);
-        }
+            Description = "TestCountry1",
+            IsoNum = 999,
+            IsoA2 = "TC",
+            IsoA3 = "TST",
+            IsEnable = true
+        };
 
-        [Fact]
-        public async Task GetCountries_ShouldReturnOkWithCountries()
+        // Act
+        var result = await _service.CreateAsync(request);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal(ServiceErrorType.Conflict, result.ErrorType);
+        Assert.Null(result.Data);
+        Assert.False(string.IsNullOrWhiteSpace(result.Message));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldUpdateCountry_WhenRequestIsValid()
+    {
+        // Arrange
+        var request = new UpdateCountryRequestDto
         {
-            // Arrange
-            var controller = BuildController();
+            Id = 1,
+            Description = "CountryUpdated",
+            IsoNum = 840,
+            IsoA2 = "us",
+            IsoA3 = "usa",
+            IsEnable = true
+        };
 
-            // Act
-            ActionResult<IEnumerable<CountryResponseDto>> actionResult = await controller.GetCountries();
+        // Act
+        var result = await _service.UpdateAsync(1, request);
 
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-            var result = Assert.IsAssignableFrom<IEnumerable<CountryResponseDto>>(okResult.Value);
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal(ServiceErrorType.None, result.ErrorType);
+        Assert.True(result.Data);
 
-            Assert.NotNull(result);
-            Assert.NotEmpty(result);
-            Assert.Equal(2, result.Count());
-        }
+        var entity = await _context.Countries.FindAsync([1], TestContext.Current.CancellationToken);
+        Assert.NotNull(entity);
+        Assert.Equal("CountryUpdated", entity.Description);
+        Assert.Equal(840, entity.IsoNum);
+        Assert.Equal("US", entity.IsoA2);
+        Assert.Equal("USA", entity.IsoA3);
+        Assert.NotNull(entity.UpdatedDate);
+    }
 
-        [Fact]
-        public async Task GetCountryById_ShouldReturnOk_WhenCountryExists()
+    [Fact]
+    public async Task UpdateAsync_ShouldReturnValidation_WhenRouteIdDoesNotMatchRequestId()
+    {
+        // Arrange
+        var request = new UpdateCountryRequestDto
         {
-            // Arrange
-            var controller = BuildController();
+            Id = 2,
+            Description = "CountryUpdated",
+            IsoNum = 840,
+            IsoA2 = "US",
+            IsoA3 = "USA",
+            IsEnable = true
+        };
 
-            // Act
-            ActionResult<CountryResponseDto> actionResult = await controller.GetCountryById(1);
+        // Act
+        var result = await _service.UpdateAsync(1, request);
 
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-            var result = Assert.IsType<CountryResponseDto>(okResult.Value);
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal(ServiceErrorType.Validation, result.ErrorType);
+        Assert.False(result.Data);
+        Assert.False(string.IsNullOrWhiteSpace(result.Message));
+    }
 
-            Assert.Equal(1, result.Id);
-            Assert.Equal("TestCountry1", result.Description);
-            Assert.Equal("TC", result.IsoA2);
-            Assert.Equal("TST", result.IsoA3);
-        }
-
-        [Fact]
-        public async Task GetCountryById_ShouldReturnNotFound_WhenCountryDoesNotExist()
+    [Fact]
+    public async Task UpdateAsync_ShouldReturnNotFound_WhenCountryDoesNotExist()
+    {
+        // Arrange
+        var request = new UpdateCountryRequestDto
         {
-            // Arrange
-            var controller = BuildController();
+            Id = 999,
+            Description = "CountryUpdated",
+            IsoNum = 840,
+            IsoA2 = "US",
+            IsoA3 = "USA",
+            IsEnable = true
+        };
 
-            // Act
-            ActionResult<CountryResponseDto> actionResult = await controller.GetCountryById(999);
+        // Act
+        var result = await _service.UpdateAsync(999, request);
 
-            // Assert
-            var notFoundResult = Assert.IsType<NotFoundObjectResult>(actionResult.Result);
-            Assert.NotNull(notFoundResult.Value);
-        }
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal(ServiceErrorType.NotFound, result.ErrorType);
+        Assert.False(result.Data);
+        Assert.False(string.IsNullOrWhiteSpace(result.Message));
+    }
 
-        [Fact]
-        public async Task CreateCountry_ShouldReturnCreatedAtAction_WhenRequestIsValid()
+    [Fact]
+    public async Task UpdateAsync_ShouldReturnConflict_WhenDuplicateExists()
+    {
+        // Arrange
+        var request = new UpdateCountryRequestDto
         {
-            // Arrange
-            var controller = BuildController();
+            Id = 1,
+            Description = "TestCountry2",
+            IsoNum = 444,
+            IsoA2 = "TS",
+            IsoA3 = "TCT",
+            IsEnable = true
+        };
 
-            var request = new CreateCountryRequestDto
+        // Act
+        var result = await _service.UpdateAsync(1, request);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal(ServiceErrorType.Conflict, result.ErrorType);
+        Assert.False(result.Data);
+        Assert.False(string.IsNullOrWhiteSpace(result.Message));
+    }
+
+    [Fact]
+    public async Task DeleteAsync_ShouldRemoveCountry_WhenCountryExists()
+    {
+        // Act
+        var result = await _service.DeleteAsync(1);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal(ServiceErrorType.None, result.ErrorType);
+        Assert.True(result.Data);
+
+        var entity = await _context.Countries.FindAsync([1], TestContext.Current.CancellationToken);
+        Assert.Null(entity);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_ShouldReturnNotFound_WhenCountryDoesNotExist()
+    {
+        // Act
+        var result = await _service.DeleteAsync(999);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal(ServiceErrorType.NotFound, result.ErrorType);
+        Assert.False(result.Data);
+        Assert.False(string.IsNullOrWhiteSpace(result.Message));
+    }
+
+    public void Dispose()
+    {
+        _context.Database.EnsureDeleted();
+        _context.Dispose();
+    }
+
+    private static INF5120DbContext CreateDbContext()
+    {
+        var options = new DbContextOptionsBuilder<INF5120DbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+
+        return new INF5120DbContext(options);
+    }
+
+    private static CountryService CreateService(INF5120DbContext context)
+    {
+        var repository = new CountryRepository(context);
+
+        return new CountryService(
+            repository,
+            NullLogger<CountryService>.Instance
+        );
+    }
+
+    private static void SeedCountries(INF5120DbContext context)
+    {
+        context.Countries.AddRange(
+            new Country
             {
-                Description = "Dominican Republic",
-                IsoNum = 214,
-                IsoA2 = "do",
-                IsoA3 = "dom",
-                IsEnable = true
-            };
-
-            // Act
-            ActionResult<CountryResponseDto> actionResult = await controller.CreateCountry(request);
-
-            // Assert
-            var createdResult = Assert.IsType<CreatedAtActionResult>(actionResult.Result);
-            Assert.Equal(nameof(CountryController.GetCountryById), createdResult.ActionName);
-
-            var result = Assert.IsType<CountryResponseDto>(createdResult.Value);
-            Assert.Equal("Dominican Republic", result.Description);
-            Assert.Equal("DO", result.IsoA2);
-            Assert.Equal("DOM", result.IsoA3);
-
-            var entity = await _context.Countries.FirstOrDefaultAsync(c => c.Description == "Dominican Republic", cancellationToken: TestContext.Current.CancellationToken);
-            Assert.NotNull(entity);
-            Assert.Equal("DO", entity.IsoA2);
-            Assert.Equal("DOM", entity.IsoA3);
-        }
-
-        [Fact]
-        public async Task CreateCountry_ShouldReturnConflict_WhenCountryAlreadyExists()
-        {
-            // Arrange
-            var controller = BuildController();
-
-            var request = new CreateCountryRequestDto
-            {
+                Id = 1,
                 Description = "TestCountry1",
                 IsoNum = 999,
                 IsoA2 = "TC",
                 IsoA3 = "TST",
-                IsEnable = true
-            };
-
-            // Act
-            ActionResult<CountryResponseDto> actionResult = await controller.CreateCountry(request);
-
-            // Assert
-            var conflictResult = Assert.IsType<ConflictObjectResult>(actionResult.Result);
-            Assert.NotNull(conflictResult.Value);
-        }
-
-        [Fact]
-        public async Task CreateCountry_ShouldReturnValidationProblem_WhenModelStateIsInvalid()
-        {
-            // Arrange
-            var controller = BuildController();
-            controller.ModelState.AddModelError("Description", "The Description field is required.");
-
-            var request = new CreateCountryRequestDto
-            {
-                Description = "Invalid",
-                IsoNum = 214,
-                IsoA2 = "DO",
-                IsoA3 = "DOM",
-                IsEnable = true
-            };
-
-            // Act
-            ActionResult<CountryResponseDto> actionResult = await controller.CreateCountry(request);
-
-            // Assert
-            var validationResult = Assert.IsType<ObjectResult>(actionResult.Result);
-            var problemDetails = Assert.IsType<ValidationProblemDetails>(validationResult.Value);
-
-            Assert.NotNull(problemDetails.Errors);
-            Assert.True(problemDetails.Errors.ContainsKey("Description"));
-        }
-
-        [Fact]
-        public async Task UpdateCountry_ShouldReturnNoContent_WhenRequestIsValid()
-        {
-            // Arrange
-            var controller = BuildController();
-
-            var request = new UpdateCountryRequestDto
-            {
-                Id = 1,
-                Description = "CountryUpdated",
-                IsoNum = 840,
-                IsoA2 = "us",
-                IsoA3 = "usa",
-                IsEnable = true
-            };
-
-            // Act
-            IActionResult actionResult = await controller.UpdateCountry(1, request);
-
-            // Assert
-            Assert.IsType<NoContentResult>(actionResult);
-
-            var entity = await _context.Countries.FindAsync([1], TestContext.Current.CancellationToken);
-            Assert.NotNull(entity);
-            Assert.Equal("CountryUpdated", entity.Description);
-            Assert.Equal(840, entity.IsoNum);
-            Assert.Equal("US", entity.IsoA2);
-            Assert.Equal("USA", entity.IsoA3);
-            Assert.NotNull(entity.UpdatedDate);
-        }
-
-        [Fact]
-        public async Task UpdateCountry_ShouldReturnBadRequest_WhenRouteIdDoesNotMatchRequestId()
-        {
-            // Arrange
-            var controller = BuildController();
-
-            var request = new UpdateCountryRequestDto
+                IsEnable = true,
+                CreatedDate = SeedDateUtc
+            },
+            new Country
             {
                 Id = 2,
-                Description = "CountryUpdated",
-                IsoNum = 840,
-                IsoA2 = "US",
-                IsoA3 = "USA",
-                IsEnable = true
-            };
-
-            // Act
-            IActionResult actionResult = await controller.UpdateCountry(1, request);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(actionResult);
-            Assert.NotNull(badRequestResult.Value);
-        }
-
-        [Fact]
-        public async Task UpdateCountry_ShouldReturnNotFound_WhenCountryDoesNotExist()
-        {
-            // Arrange
-            var controller = BuildController();
-
-            var request = new UpdateCountryRequestDto
-            {
-                Id = 999,
-                Description = "CountryUpdated",
-                IsoNum = 840,
-                IsoA2 = "US",
-                IsoA3 = "USA",
-                IsEnable = true
-            };
-
-            // Act
-            IActionResult actionResult = await controller.UpdateCountry(999, request);
-
-            // Assert
-            var notFoundResult = Assert.IsType<NotFoundObjectResult>(actionResult);
-            Assert.NotNull(notFoundResult.Value);
-        }
-
-        [Fact]
-        public async Task UpdateCountry_ShouldReturnConflict_WhenAnotherCountryAlreadyExistsWithSameUniqueFields()
-        {
-            // Arrange
-            var controller = BuildController();
-
-            var request = new UpdateCountryRequestDto
-            {
-                Id = 1,
                 Description = "TestCountry2",
                 IsoNum = 444,
                 IsoA2 = "TS",
                 IsoA3 = "TCT",
-                IsEnable = true
-            };
+                IsEnable = true,
+                CreatedDate = SeedDateUtc
+            });
 
-            // Act
-            IActionResult actionResult = await controller.UpdateCountry(1, request);
-
-            // Assert
-            var conflictResult = Assert.IsType<ConflictObjectResult>(actionResult);
-            Assert.NotNull(conflictResult.Value);
-        }
-
-        [Fact]
-        public async Task UpdateCountry_ShouldReturnValidationProblem_WhenModelStateIsInvalid()
-        {
-            // Arrange
-            var controller = BuildController();
-            controller.ModelState.AddModelError("Description", "The Description field is required.");
-
-            var request = new UpdateCountryRequestDto
-            {
-                Id = 1,
-                Description = "Invalid",
-                IsoNum = 840,
-                IsoA2 = "US",
-                IsoA3 = "USA",
-                IsEnable = true
-            };
-
-            // Act
-            IActionResult actionResult = await controller.UpdateCountry(1, request);
-
-            // Assert
-            var validationResult = Assert.IsType<ObjectResult>(actionResult);
-            var problemDetails = Assert.IsType<ValidationProblemDetails>(validationResult.Value);
-
-            Assert.NotNull(problemDetails.Errors);
-            Assert.True(problemDetails.Errors.ContainsKey("Description"));
-        }
-
-        [Fact]
-        public async Task DeleteCountry_ShouldReturnNoContent_WhenCountryExists()
-        {
-            // Arrange
-            var controller = BuildController();
-
-            // Act
-            IActionResult actionResult = await controller.DeleteCountry(1);
-
-            // Assert
-            Assert.IsType<NoContentResult>(actionResult);
-
-            var entity = await _context.Countries.FindAsync([1], TestContext.Current.CancellationToken);
-            Assert.Null(entity);
-        }
-
-        [Fact]
-        public async Task DeleteCountry_ShouldReturnNotFound_WhenCountryDoesNotExist()
-        {
-            // Arrange
-            var controller = BuildController();
-
-            // Act
-            IActionResult actionResult = await controller.DeleteCountry(999);
-
-            // Assert
-            var notFoundResult = Assert.IsType<NotFoundObjectResult>(actionResult);
-            Assert.NotNull(notFoundResult.Value);
-        }
+        context.SaveChanges();
     }
 }

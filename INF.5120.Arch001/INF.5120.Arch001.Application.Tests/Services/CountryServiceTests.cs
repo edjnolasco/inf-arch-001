@@ -5,6 +5,7 @@ using INF._5120.Arch001.Domain.Entities;
 using INF._5120.Arch001.Infrastructure.Persistence.Context;
 using INF._5120.Arch001.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace INF._5120.Arch001.Application.Tests.Services
 {
@@ -46,7 +47,11 @@ namespace INF._5120.Arch001.Application.Tests.Services
             _context.SaveChanges();
 
             var repository = new CountryRepository(_context);
-            _service = new CountryService(repository);
+
+            _service = new CountryService(
+                repository,
+                NullLogger<CountryService>.Instance
+            );
         }
 
         [Fact]
