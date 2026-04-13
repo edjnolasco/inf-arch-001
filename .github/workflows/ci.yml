@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+      - 'bugfix/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
+
+env:
+  SOLUTION_PATH: INF.5120.Arch001/INF.5120.Arch001.sln
+  DOTNET_VERSION: '8.0.x'
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
+          cache-dependency-path: |
+            **/*.csproj
+            **/packages.lock.json
+            **/global.json
+            **/Directory.Packages.props
+
+      - name: Display .NET info
+        run: dotnet --info
+
+      - name: Verify solution exists
+        run: |
+          if [ ! -f "${{ env.SOLUTION_PATH }}" ]; then
+            echo "Solution not found at: ${{ env.SOLUTION_PATH }}"
+            echo "Repository structure:"
+            find . -maxdepth 4 -type f | sort
+            exit 1
+          fi
+
+      - name: Restore
+        run: dotnet restore "${{ env.SOLUTION_PATH }}"
+
+      - name: Build
+        run: dotnet build "${{ env.SOLUTION_PATH }}" --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test "${{ env.SOLUTION_PATH }}" --configuration Release --no-build --verbosity normal
