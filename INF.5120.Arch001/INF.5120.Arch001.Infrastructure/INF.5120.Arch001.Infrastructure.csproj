@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>INF._5120.Arch001.Infrastructure</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\INF.5120.Arch001.Application\INF.5120.Arch001.Application.csproj" />
+    <ProjectReference Include="..\INF.5120.Arch001.Domain\INF.5120.Arch001.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
